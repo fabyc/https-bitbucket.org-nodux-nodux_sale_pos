@@ -43,25 +43,28 @@ class Sale():
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()
+        total_amount = cls.total_amount
         cls._buttons.update({
                 'wizard_sale_payment': {
-                    'invisible':Eval('paid_amount', 'total_amount')
+                    'invisible': Eval('invoice_state') != 'none'
                     },
-                    
                 'wizard_add_product': {
-                    'invisible':Eval('paid_amount', 'total_amount')
+                    'invisible': Eval('invoice_state') != 'none'
                     },
                 })
-        cls.payment_term.states['readonly'] |= Eval('paid_amount')
-        cls.payment_term.depends.append('paid_amount')
-        cls.lines.states['readonly'] |= Eval('paid_amount')
-        cls.lines.depends.append('paid_amount')
-        cls.self_pick_up.states['readonly'] |= Eval('paid_amount')
-        cls.self_pick_up.depends.append('paid_amount')
-        cls.acumulativo.states['readonly'] |= Eval('paid_amount')
-        cls.sale_date.states['readonly'] |= Eval('paid_amount')
-        cls.sale_device.states['readonly'] |= Eval('paid_amount')
-         
+                
+        cls.payment_term.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.payment_term.depends.append('invoice_state')
+        cls.lines.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.lines.depends.append('invoice_state')
+        cls.self_pick_up.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.self_pick_up.depends.append('invoice_state')
+        cls.acumulativo.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.sale_date.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.sale_device.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.party.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.lines.depends.append('invoice_state')
+        
     @staticmethod
     def default_sale_date():
         Date = Pool().get('ir.date')
@@ -177,7 +180,7 @@ class Sale():
                 del result[key]
         return result
         
-    @fields.depends('lines', 'currency')
+    @fields.depends('lines', 'currency', 'party')
     def on_change_lines(self):
         pool = Pool()
         Tax = pool.get('account.tax')
