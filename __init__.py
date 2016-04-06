@@ -6,4 +6,5 @@ from .sale import *
 def register():
     Pool.register(
         Sale,
+        SaleLine,
         module='nodux_sale_pos', type_='model')

@@ -15,7 +15,8 @@ from itertools import groupby, chain
 from functools import partial
 from trytond.transaction import Transaction
 
-__all__ = ['Sale']
+__all__ = ['Sale', 'SaleLine']
+
 __metaclass__ = PoolMeta
 _ZERO = Decimal('0.0')
 PRODUCT_TYPES = ['goods']
@@ -140,3 +141,13 @@ class Sale():
             changes['total_amount'] = self.currency.round(
                 changes['total_amount'])
         return changes
+        
+class SaleLine(ModelSQL, ModelView):
+    'Sale Line'
+    __name__ = 'sale.line'
+    _rec_name = 'description'
+    
+    @staticmethod
+    def default_quantity():
+        return 1
+    
