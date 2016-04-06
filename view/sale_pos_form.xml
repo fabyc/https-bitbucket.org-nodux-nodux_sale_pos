@@ -43,9 +43,11 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
     
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='reference']" position="replace">
+        <label name="warehouse"/>
     </xpath>
     
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='reference']" position="replace">
+        <field name="warehouse"/>
     </xpath>
     
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='ticket_number']" position="replace">
