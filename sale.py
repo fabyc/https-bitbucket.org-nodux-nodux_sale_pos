@@ -64,6 +64,8 @@ class Sale():
         cls.sale_device.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.party.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.lines.depends.append('invoice_state')
+        cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         
     @staticmethod
     def default_sale_date():
