@@ -53,6 +53,7 @@ class Sale():
                     },
                 })
                 
+        del cls.party.states['readonly'] 
         cls.payment_term.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.payment_term.depends.append('invoice_state')
         cls.lines.states['readonly'] |= Eval('invoice_state') != 'none'
@@ -62,10 +63,9 @@ class Sale():
         cls.acumulativo.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.sale_date.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.sale_device.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.party.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.lines.depends.append('invoice_state')
         cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
+        cls.party.states['readonly'] = Eval('invoice_state') != 'none'
         
     @staticmethod
     def default_sale_date():
