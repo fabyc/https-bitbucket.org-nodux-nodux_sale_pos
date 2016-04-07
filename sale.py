@@ -33,11 +33,10 @@ tipoPago = {
 class Sale():
     __name__ = 'sale.sale'
             
-    subtotal_0 = fields.Numeric(u'Subtotal 0%', digits=(16, Eval('currency_digits', 2)),
+    subtotal_0 = fields.Numeric(u'Subtotal 0%', readonly = True, digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits'])
             
-    subtotal_12 = fields.Numeric(u'Subtotal 12%',
-            digits=(16, Eval('currency_digits', 2)),
+    subtotal_12 = fields.Numeric(u'Subtotal 12%', readonly = True, digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits'])
     
         
