@@ -8,3 +8,6 @@ def register():
         Sale,
         SaleLine,
         module='nodux_sale_pos', type_='model')
+    Pool.register(
+        SaleReportTicket,
+        module='nodux_sale_pos', type_='report')

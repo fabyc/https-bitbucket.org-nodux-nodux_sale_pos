@@ -14,8 +14,10 @@ from dateutil.relativedelta import relativedelta
 from itertools import groupby, chain
 from functools import partial
 from trytond.transaction import Transaction
+from trytond.report import Report
+import pytz
 
-__all__ = ['Sale', 'SaleLine']
+__all__ = ['Sale', 'SaleLine', 'SaleReportTicket']
 
 __metaclass__ = PoolMeta
 _ZERO = Decimal('0.0')
@@ -79,7 +81,6 @@ class Sale():
     def default_sale_date():
         Date = Pool().get('ir.date')
         date = Date.today()
-        print date
         return date
         
     @fields.depends('lines', 'currency', 'party')
@@ -228,6 +229,37 @@ class Sale():
                     
                     })
                     
+class SaleReportTicket(Report):
+    __name__ = 'sale_pos.sale_pos_ticket'
+
+    @classmethod
+    def parse(cls, report, records, data, localcontext):
+        User = Pool().get('res.user')
+        user = User(Transaction().user)
+        sale = records[0]
+        Sale = Pool().get('sale.sale')
+        
+        for payment in sale.payments:
+            if sale.company.timezone:
+                timezone = pytz.timezone(sale.company.timezone)
+                dt = payment.create_date
+                fecha_p = datetime.astimezone(dt.replace(tzinfo=pytz.utc), timezone)
+                
+        localcontext['fecha'] = cls._get_fecha(Sale, sale)
+        localcontext['fecha_pago'] = fecha_p
+        
+        return super(SaleReportTicket, cls).parse(report, records, data,
+                localcontext=localcontext)      
+        
+    @classmethod
+    def _get_fecha(cls, Sale, sale):
+        if sale.company.timezone:
+            timezone = pytz.timezone(sale.company.timezone)
+            dt = sale.create_date
+            fecha = datetime.astimezone(dt.replace(tzinfo=pytz.utc), timezone)
+            
+        return fecha
+        
 class SaleLine(ModelSQL, ModelView):
     'Sale Line'
     __name__ = 'sale.line'
