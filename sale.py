@@ -33,17 +33,25 @@ tipoPago = {
 class Sale():
     __name__ = 'sale.sale'
             
-    subtotal_0 = fields.Numeric(u'Subtotal 0%', readonly = True, digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits'])
-            
-    subtotal_12 = fields.Numeric(u'Subtotal 12%', readonly = True, digits=(16, Eval('currency_digits', 2)),
-            depends=['currency_digits'])
-    
+    subtotal_0 = fields.Function(fields.Numeric('Subtotal 0%',
+            digits=(16, Eval('currency_digits', 2)),
+            depends=['currency_digits']), 'get_amount')
+    subtotal_0_cache = fields.Numeric('Subtotal 0% Cache',
+        digits=(16, Eval('currency_digits', 2)),
+        readonly=True,
+        depends=['currency_digits'])
+        
+    subtotal_12 = fields.Function(fields.Numeric('Subtotal 12%',
+            digits=(16, Eval('currency_digits', 2)),
+            depends=['currency_digits']), 'get_amount')
+    subtotal_12_cache = fields.Numeric('Subtotal 12% Cache',
+        digits=(16, Eval('currency_digits', 2)),
+        readonly=True,
+        depends=['currency_digits'])
         
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()
-        total_amount = cls.total_amount
         cls._buttons.update({
                 'wizard_sale_payment': {
                     'invisible': Eval('invoice_state') != 'none'
@@ -52,7 +60,7 @@ class Sale():
                     'invisible': Eval('invoice_state') != 'none'
                     },
                 })
-                
+        
         del cls.party.states['readonly'] 
         cls.payment_term.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.payment_term.depends.append('invoice_state')
@@ -66,7 +74,7 @@ class Sale():
         cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
-        
+    
     @staticmethod
     def default_sale_date():
         Date = Pool().get('ir.date')
@@ -143,6 +151,83 @@ class Sale():
                 changes['total_amount'])
         return changes
         
+    @classmethod
+    def get_amount(cls, sales, names):
+        untaxed_amount = {}
+        tax_amount = {}
+        total_amount = {}
+        sub12 = Decimal(0.0)
+        sub0= Decimal(0.0)
+        subtotal_12 = {}
+        subtotal_0 = {}
+        
+        if {'tax_amount', 'total_amount'} & set(names):
+            compute_taxes = True
+        else:
+            compute_taxes = False
+        # Sort cached first and re-instanciate to optimize cache management
+        sales = sorted(sales, key=lambda s: s.state in cls._states_cached,
+            reverse=True)
+        sales = cls.browse(sales)
+        for sale in sales:
+            
+            for line in sale.lines:
+                if  line.taxes:
+                    for t in line.taxes:
+                        if str('{:.0f}'.format(t.rate*100)) == '12':
+                            sub12= sub12 + (line.amount)
+                        elif str('{:.0f}'.format(t.rate*100)) == '0':
+                            sub0 = sub0 + (line.amount)
+                
+            if (sale.state in cls._states_cached
+                    and sale.untaxed_amount_cache is not None
+                    and sale.tax_amount_cache is not None
+                    and sale.total_amount_cache is not None
+                    and sale.subtotal_0_cache is not None
+                    and sale.subtotal_12_cache is not None):
+                untaxed_amount[sale.id] = sale.untaxed_amount_cache
+                subtotal_0[sale.id] = sale.subtotal_0_cache
+                subtotal_12[sale.id] = sale.subtotal_12_cache
+                
+                if compute_taxes:
+                    tax_amount[sale.id] = sale.tax_amount_cache
+                    total_amount[sale.id] = sale.total_amount_cache
+            else:
+                untaxed_amount[sale.id] = sum(
+                    (line.amount for line in sale.lines
+                        if line.type == 'line'), _ZERO)
+                subtotal_0[sale.id] = sub0
+                subtotal_12[sale.id] = sub12
+                
+                if compute_taxes:
+                    tax_amount[sale.id] = sale.get_tax_amount()
+                    total_amount[sale.id] = (
+                        untaxed_amount[sale.id] + tax_amount[sale.id])
+
+        result = {
+            'untaxed_amount': untaxed_amount,
+            'tax_amount': tax_amount,
+            'total_amount': total_amount,
+            'subtotal_0': subtotal_0,
+            'subtotal_12': subtotal_12,
+            }
+        for key in result.keys():
+            if key not in names:
+                del result[key]
+        return result
+        
+    @classmethod
+    def store_cache(cls, sales):
+        for sale in sales:
+            cls.write([sale], {
+                    'untaxed_amount_cache': sale.untaxed_amount,
+                    'tax_amount_cache': sale.tax_amount,
+                    'total_amount_cache': sale.total_amount,
+                    'subtotal_12_cache': sale.subtotal_12,
+                    'subtotal_0_cache': sale.subtotal_0,
+                    
+                    })
+                    
 class SaleLine(ModelSQL, ModelView):
     'Sale Line'
     __name__ = 'sale.line'
