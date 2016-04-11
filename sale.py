@@ -238,6 +238,7 @@ class SaleReportTicket(Report):
         user = User(Transaction().user)
         sale = records[0]
         Sale = Pool().get('sale.sale')
+        fecha_p = None
         
         for payment in sale.payments:
             if sale.company.timezone:
