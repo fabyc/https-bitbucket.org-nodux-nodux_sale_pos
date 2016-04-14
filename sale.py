@@ -231,7 +231,7 @@ class Sale():
                     
 class SaleReportTicket(Report):
     __name__ = 'sale_pos.sale_pos_ticket'
-
+    
     @classmethod
     def parse(cls, report, records, data, localcontext):
         User = Pool().get('res.user')
@@ -240,17 +240,10 @@ class SaleReportTicket(Report):
         Sale = Pool().get('sale.sale')
         fecha_p = None
         
-        for payment in sale.payments:
-            if sale.company.timezone:
-                timezone = pytz.timezone(sale.company.timezone)
-                dt = payment.create_date
-                fecha_p = datetime.astimezone(dt.replace(tzinfo=pytz.utc), timezone)
-                
         localcontext['fecha'] = cls._get_fecha(Sale, sale)
-        localcontext['fecha_pago'] = fecha_p
-        
+        localcontext['timedelta'] = timedelta
         return super(SaleReportTicket, cls).parse(report, records, data,
-                localcontext=localcontext)      
+                localcontext=localcontext)     
         
     @classmethod
     def _get_fecha(cls, Sale, sale):
