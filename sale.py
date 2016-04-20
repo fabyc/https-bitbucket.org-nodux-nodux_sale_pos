@@ -63,7 +63,8 @@ class Sale():
                     },
                 })
         
-        del cls.party.states['readonly'] 
+        del cls.party.states['readonly']
+        del cls.price_list.states['readonly'] 
         cls.payment_term.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.payment_term.depends.append('invoice_state')
         cls.lines.states['readonly'] |= Eval('invoice_state') != 'none'
@@ -76,6 +77,7 @@ class Sale():
         cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
+        cls.price_list.states['readonly'] = Eval('invoice_state') != 'none'
     
     @staticmethod
     def default_sale_date():
@@ -83,6 +85,33 @@ class Sale():
         date = Date.today()
         return date
         
+    @fields.depends('payment_term', 'party')
+    def on_change_payment_term(self):
+        pool = Pool()
+        res= {}
+        termino = self.payment_term
+        if self.payment_term:          
+            if self.party.vat_number == '9999999999999':
+                TermLines = pool.get('account.invoice.payment_term.line')
+                Term = pool.get('account.invoice.payment_term')
+                term = Term.search([('id', '!=', None)])
+                for t in term:
+                    cont = 0
+                    termlines = TermLines.search([('payment', '=', t.id)])
+                    for tl in termlines:
+                        t_f = tl
+                        cont += 1
+                    if cont == 1 and t_f.days == 0:
+                        termino = t
+                        break
+            if termino:
+                res['payment_term'] = termino.id
+            else:   
+                res['payment_term'] = None
+        else: 
+            res['payment_term'] = None
+        return res
+            
     @fields.depends('lines', 'currency', 'party')
     def on_change_lines(self):
         pool = Pool()
@@ -92,7 +121,7 @@ class Sale():
         sub12 = Decimal(0.0)
         sub0= Decimal(0.0)
         config = Configuration(1)
-
+        
         changes = {
             'untaxed_amount': Decimal('0.0'),
             'tax_amount': Decimal('0.0'),
@@ -115,6 +144,7 @@ class Sale():
                 
                 changes['subtotal_12'] = sub12
                 changes['subtotal_0'] = sub0
+                
             def round_taxes():
                 if self.currency:
                     for key, value in taxes.iteritems():
@@ -231,7 +261,7 @@ class Sale():
                     
 class SaleReportTicket(Report):
     __name__ = 'sale_pos.sale_pos_ticket'
-    
+
     @classmethod
     def parse(cls, report, records, data, localcontext):
         User = Pool().get('res.user')
