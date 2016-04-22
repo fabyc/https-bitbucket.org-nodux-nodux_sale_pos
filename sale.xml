@@ -12,6 +12,14 @@ copyright notices and license terms. -->
             <field name="name">sale_pos_form</field>
         </record>
         
+        <record model="ir.ui.view" id="sale_pos_view_tree">
+            <field name="model">sale.sale</field>
+            <field name="type">tree</field>
+            <field name="inherit"
+                ref="sale_pos.sale_pos_view_tree"/>
+            <field name="name">sale_pos_tree</field>
+        </record>
+        
         <!-- Reports-->
         <record model="ir.action.report" id="sale_pos.report_sale_ticket">
             <field name="name">Sale Ticket</field>
