@@ -54,6 +54,7 @@ class Sale():
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()
+        
         cls._buttons.update({
                 'wizard_sale_payment': {
                     'invisible': Eval('invoice_state') != 'none'
@@ -65,20 +66,10 @@ class Sale():
         
         del cls.party.states['readonly']
         del cls.price_list.states['readonly'] 
-        cls.payment_term.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.payment_term.depends.append('invoice_state')
-        cls.lines.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.lines.depends.append('invoice_state')
-        cls.self_pick_up.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.self_pick_up.depends.append('invoice_state')
-        cls.acumulativo.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.sale_date.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.sale_device.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
-        cls.warehouse.states['readonly'] |= Eval('invoice_state') != 'none'
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
         cls.price_list.states['readonly'] = Eval('invoice_state') != 'none'
-    
+        cls.acumulativo.states['readonly'] |= Eval('invoice_state') != 'none'
+        
     @staticmethod
     def default_sale_date():
         Date = Pool().get('ir.date')
