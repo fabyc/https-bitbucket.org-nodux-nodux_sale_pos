@@ -10,19 +10,24 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
     
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='tax_amount']" position="replace">
-        <label name="subtotal_12"/>
+        <label name="subtotal_0"/>
     </xpath>
     
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='tax_amount']" position="replace">
-        <field name="subtotal_12"/>
-    </xpath>
-    
-    <xpath expr="/form/notebook/page[@id='sale']/field[@name='subtotal_12']" position="after">
-        <label name="subtotal_0"/>
         <field name="subtotal_0"/>
     </xpath>
     
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='subtotal_0']" position="after">
+        <label name="subtotal_12"/>
+        <field name="subtotal_12"/>
+    </xpath>
+    
+    <xpath expr="/form/notebook/page[@id='sale']/field[@name='subtotal_12']" position="after">
+        <label name="descuento"/>
+        <field name="descuento"/>
+    </xpath>
+    
+    <xpath expr="/form/notebook/page[@id='sale']/field[@name='descuento']" position="after">
         <label name="untaxed_amount"/>
         <field name="untaxed_amount"/>
     </xpath>

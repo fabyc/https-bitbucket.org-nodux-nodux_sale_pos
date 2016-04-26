@@ -50,7 +50,11 @@ class Sale():
         digits=(16, Eval('currency_digits', 2)),
         readonly=True,
         depends=['currency_digits'])
-        
+    
+    descuento = fields.Function(fields.Numeric('Descuento',
+            digits=(16, Eval('currency_digits', 2)),
+            depends=['currency_digits']), 'get_descuento')
+            
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()
@@ -69,6 +73,29 @@ class Sale():
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
         cls.price_list.states['readonly'] = Eval('invoice_state') != 'none'
         cls.acumulativo.states['readonly'] |= Eval('invoice_state') != 'none'
+        
+    @classmethod
+    def get_descuento(cls, sales, names):
+        descuento = {}
+        descuento_total = Decimal(0.00)
+        descuento_parcial = Decimal(0.00)
+        print "el descuento parcial es ", descuento_parcial
+        for sale in sales:
+            for line in sale.lines:
+                if line.product:
+                    descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
+                    if descuento_parcial > 0:
+                        descuento_total += descuento_parcial
+                    else:
+                        descuento_total = Decimal(0.00)
+                    descuento[sale.id] = descuento_total
+        result = {
+            'descuento': descuento,
+            }
+        for key in result.keys():
+            if key not in names:
+                del result[key]
+        return result 
         
     @staticmethod
     def default_sale_date():
@@ -112,6 +139,8 @@ class Sale():
         sub12 = Decimal(0.0)
         sub0= Decimal(0.0)
         config = Configuration(1)
+        descuento_total = Decimal(0.0)
+        descuento_parcial = Decimal(0.0)
         
         changes = {
             'untaxed_amount': Decimal('0.0'),
@@ -119,6 +148,7 @@ class Sale():
             'total_amount': Decimal('0.0'),
             'subtotal_12': Decimal('0.0'),
             'subtotal_0': Decimal('0.0'),
+            'descuento':Decimal('0.0')
             }
 
         if self.lines:
@@ -132,9 +162,17 @@ class Sale():
                             sub12= sub12 + (line.amount)
                         elif str('{:.0f}'.format(t.rate*100)) == '0':
                             sub0 = sub0 + (line.amount)
-                
+                            
+                if line.product:
+                    descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
+                    if descuento_parcial > 0:
+                        descuento_total += descuento_parcial
+                    else:
+                        descuento_total = Decimal(0.00)
+                    
                 changes['subtotal_12'] = sub12
                 changes['subtotal_0'] = sub0
+                changes['descuento'] = descuento_total
                 
             def round_taxes():
                 if self.currency:
