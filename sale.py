@@ -51,6 +51,7 @@ class Sale():
         readonly=True,
         depends=['currency_digits'])
     
+    
     descuento = fields.Function(fields.Numeric('Descuento',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_descuento')
@@ -79,16 +80,16 @@ class Sale():
         descuento = {}
         descuento_total = Decimal(0.00)
         descuento_parcial = Decimal(0.00)
-        print "el descuento parcial es ", descuento_parcial
         for sale in sales:
-            for line in sale.lines:
-                if line.product:
-                    descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
-                    if descuento_parcial > 0:
-                        descuento_total += descuento_parcial
-                    else:
-                        descuento_total = Decimal(0.00)
-                    descuento[sale.id] = descuento_total
+            if sale.lines:
+                for line in sale.lines:
+                    if line.product:
+                        descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
+                        if descuento_parcial > 0:
+                            descuento_total += descuento_parcial
+                        else:
+                            descuento_total = Decimal(0.00)
+            descuento[sale.id] = descuento_total
         result = {
             'descuento': descuento,
             }
