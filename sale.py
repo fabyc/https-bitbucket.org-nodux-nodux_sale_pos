@@ -51,7 +51,14 @@ class Sale():
         readonly=True,
         depends=['currency_digits'])
     
-    
+    subtotal_14 = fields.Function(fields.Numeric('Subtotal 14%',
+            digits=(16, Eval('currency_digits', 2)),
+            depends=['currency_digits']), 'get_amount')
+    subtotal_14_cache = fields.Numeric('Subtotal 14% Cache',
+        digits=(16, Eval('currency_digits', 2)),
+        readonly=True,
+        depends=['currency_digits'])
+        
     descuento = fields.Function(fields.Numeric('Descuento',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_descuento')
@@ -137,6 +144,7 @@ class Sale():
         Tax = pool.get('account.tax')
         Invoice = pool.get('account.invoice')
         Configuration = pool.get('account.configuration')
+        sub14 = Decimal(0.0)
         sub12 = Decimal(0.0)
         sub0= Decimal(0.0)
         config = Configuration(1)
@@ -148,6 +156,7 @@ class Sale():
             'tax_amount': Decimal('0.0'),
             'total_amount': Decimal('0.0'),
             'subtotal_12': Decimal('0.0'),
+            'subtotal_14': Decimal('0.0'),
             'subtotal_0': Decimal('0.0'),
             'descuento':Decimal('0.0')
             }
@@ -163,6 +172,8 @@ class Sale():
                             sub12= sub12 + (line.amount)
                         elif str('{:.0f}'.format(t.rate*100)) == '0':
                             sub0 = sub0 + (line.amount)
+                        elif str('{:.0f}'.format(t.rate*100)) == '14':
+                            sub14 = sub14 + (line.amount)
                             
                 if line.product:
                     descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
@@ -171,6 +182,7 @@ class Sale():
                     else:
                         descuento_total = Decimal(0.00)
                     
+                changes['subtotal_14'] = sub14
                 changes['subtotal_12'] = sub12
                 changes['subtotal_0'] = sub0
                 changes['descuento'] = descuento_total
@@ -217,8 +229,10 @@ class Sale():
         untaxed_amount = {}
         tax_amount = {}
         total_amount = {}
+        sub14 = Decimal(0.0)
         sub12 = Decimal(0.0)
         sub0= Decimal(0.0)
+        subtotal_14 = {}
         subtotal_12 = {}
         subtotal_0 = {}
         
@@ -237,6 +251,8 @@ class Sale():
                     for t in line.taxes:
                         if str('{:.0f}'.format(t.rate*100)) == '12':
                             sub12= sub12 + (line.amount)
+                        elif str('{:.0f}'.format(t.rate*100)) == '14':
+                            sub14 = sub14 + (line.amount)
                         elif str('{:.0f}'.format(t.rate*100)) == '0':
                             sub0 = sub0 + (line.amount)
                 
@@ -245,11 +261,12 @@ class Sale():
                     and sale.tax_amount_cache is not None
                     and sale.total_amount_cache is not None
                     and sale.subtotal_0_cache is not None
-                    and sale.subtotal_12_cache is not None):
+                    and sale.subtotal_12_cache is not None
+                    and sale.subtotal_14_cache is not None):
                 untaxed_amount[sale.id] = sale.untaxed_amount_cache
                 subtotal_0[sale.id] = sale.subtotal_0_cache
                 subtotal_12[sale.id] = sale.subtotal_12_cache
-                
+                subtotal_14[sale.id] = sale.subtotal_14_cache
                 if compute_taxes:
                     tax_amount[sale.id] = sale.tax_amount_cache
                     total_amount[sale.id] = sale.total_amount_cache
@@ -259,7 +276,7 @@ class Sale():
                         if line.type == 'line'), _ZERO)
                 subtotal_0[sale.id] = sub0
                 subtotal_12[sale.id] = sub12
-                
+                subtotal_14[sale.id] = sub14
                 if compute_taxes:
                     tax_amount[sale.id] = sale.get_tax_amount()
                     total_amount[sale.id] = (
@@ -271,6 +288,7 @@ class Sale():
             'total_amount': total_amount,
             'subtotal_0': subtotal_0,
             'subtotal_12': subtotal_12,
+            'subtotal_14':subtotal_14,
             }
         for key in result.keys():
             if key not in names:
