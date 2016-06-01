@@ -302,6 +302,7 @@ class Sale():
                     'untaxed_amount_cache': sale.untaxed_amount,
                     'tax_amount_cache': sale.tax_amount,
                     'total_amount_cache': sale.total_amount,
+                    'subtotal_14_cache': sale.subtotal_14,
                     'subtotal_12_cache': sale.subtotal_12,
                     'subtotal_0_cache': sale.subtotal_0,
                     
