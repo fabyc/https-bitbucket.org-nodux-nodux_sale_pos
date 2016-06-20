@@ -6,4 +6,14 @@ this repository contains the full copyright notices and license terms. -->
     <xpath expr="/form/notebook/page/group[@id=&quot;amount_buttons&quot;]/group[@id='buttons']/button[@name='process']"
             position="replace">
     </xpath>
+
+    <xpath expr="/form/notebook/page[@id=&quot;sale&quot;]/group[@id=&quot;states&quot;]"
+            position="before">
+            <newline/>
+            <label name="imprimir"/>
+            <field name="imprimir"/>
+            <newline/>
+
+    </xpath>
+
 </data>

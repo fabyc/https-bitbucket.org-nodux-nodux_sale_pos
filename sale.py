@@ -34,7 +34,7 @@ tipoPago = {
 
 class Sale():
     __name__ = 'sale.sale'
-            
+
     subtotal_0 = fields.Function(fields.Numeric('Subtotal 0%',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_amount')
@@ -42,7 +42,7 @@ class Sale():
         digits=(16, Eval('currency_digits', 2)),
         readonly=True,
         depends=['currency_digits'])
-        
+
     subtotal_12 = fields.Function(fields.Numeric('Subtotal 12%',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_amount')
@@ -50,7 +50,7 @@ class Sale():
         digits=(16, Eval('currency_digits', 2)),
         readonly=True,
         depends=['currency_digits'])
-    
+
     subtotal_14 = fields.Function(fields.Numeric('Subtotal 14%',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_amount')
@@ -58,15 +58,21 @@ class Sale():
         digits=(16, Eval('currency_digits', 2)),
         readonly=True,
         depends=['currency_digits'])
-        
+
     descuento = fields.Function(fields.Numeric('Descuento',
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_descuento')
-            
+
+    #imprimir sin precio unitario componentes de computadora
+    imprimir = fields.Boolean('Imprimir sin precio unitario', help='Imprimir'
+                'cotizacion sin desglose de precio unitario', states={
+                'invisible' : Eval('state') != 'quotation',
+                })
+
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()
-        
+
         cls._buttons.update({
                 'wizard_sale_payment': {
                     'invisible': Eval('invoice_state') != 'none'
@@ -75,13 +81,13 @@ class Sale():
                     'invisible': Eval('invoice_state') != 'none'
                     },
                 })
-        
+
         del cls.party.states['readonly']
-        del cls.price_list.states['readonly'] 
+        del cls.price_list.states['readonly']
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
         cls.price_list.states['readonly'] = Eval('invoice_state') != 'none'
         cls.acumulativo.states['readonly'] |= Eval('invoice_state') != 'none'
-        
+
     @classmethod
     def get_descuento(cls, sales, names):
         descuento = {}
@@ -103,20 +109,20 @@ class Sale():
         for key in result.keys():
             if key not in names:
                 del result[key]
-        return result 
-        
+        return result
+
     @staticmethod
     def default_sale_date():
         Date = Pool().get('ir.date')
         date = Date.today()
         return date
-        
+
     @fields.depends('payment_term', 'party')
     def on_change_payment_term(self):
         pool = Pool()
         res= {}
         termino = self.payment_term
-        if self.payment_term:          
+        if self.payment_term:
             if self.party.vat_number == '9999999999999':
                 TermLines = pool.get('account.invoice.payment_term.line')
                 Term = pool.get('account.invoice.payment_term')
@@ -132,12 +138,12 @@ class Sale():
                         break
             if termino:
                 res['payment_term'] = termino.id
-            else:   
+            else:
                 res['payment_term'] = None
-        else: 
+        else:
             res['payment_term'] = None
         return res
-            
+
     @fields.depends('lines', 'currency', 'party')
     def on_change_lines(self):
         pool = Pool()
@@ -150,7 +156,7 @@ class Sale():
         config = Configuration(1)
         descuento_total = Decimal(0.0)
         descuento_parcial = Decimal(0.0)
-        
+
         changes = {
             'untaxed_amount': Decimal('0.0'),
             'tax_amount': Decimal('0.0'),
@@ -164,7 +170,7 @@ class Sale():
         if self.lines:
             context = self.get_tax_context()
             taxes = {}
-            
+
             for line in self.lines:
                 if  line.taxes:
                     for t in line.taxes:
@@ -174,19 +180,19 @@ class Sale():
                             sub0 = sub0 + (line.amount)
                         elif str('{:.0f}'.format(t.rate*100)) == '14':
                             sub14 = sub14 + (line.amount)
-                            
+
                 if line.product:
                     descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
                     if descuento_parcial > 0:
                         descuento_total += descuento_parcial
                     else:
                         descuento_total = Decimal(0.00)
-                    
+
                 changes['subtotal_14'] = sub14
                 changes['subtotal_12'] = sub12
                 changes['subtotal_0'] = sub0
                 changes['descuento'] = descuento_total
-                
+
             def round_taxes():
                 if self.currency:
                     for key, value in taxes.iteritems():
@@ -223,7 +229,7 @@ class Sale():
             changes['total_amount'] = self.currency.round(
                 changes['total_amount'])
         return changes
-        
+
     @classmethod
     def get_amount(cls, sales, names):
         untaxed_amount = {}
@@ -235,7 +241,7 @@ class Sale():
         subtotal_14 = {}
         subtotal_12 = {}
         subtotal_0 = {}
-        
+
         if {'tax_amount', 'total_amount'} & set(names):
             compute_taxes = True
         else:
@@ -245,7 +251,7 @@ class Sale():
             reverse=True)
         sales = cls.browse(sales)
         for sale in sales:
-            
+
             for line in sale.lines:
                 if  line.taxes:
                     for t in line.taxes:
@@ -255,7 +261,7 @@ class Sale():
                             sub14 = sub14 + (line.amount)
                         elif str('{:.0f}'.format(t.rate*100)) == '0':
                             sub0 = sub0 + (line.amount)
-                
+
             if (sale.state in cls._states_cached
                     and sale.untaxed_amount_cache is not None
                     and sale.tax_amount_cache is not None
@@ -294,7 +300,7 @@ class Sale():
             if key not in names:
                 del result[key]
         return result
-        
+
     @classmethod
     def store_cache(cls, sales):
         for sale in sales:
@@ -305,9 +311,9 @@ class Sale():
                     'subtotal_14_cache': sale.subtotal_14,
                     'subtotal_12_cache': sale.subtotal_12,
                     'subtotal_0_cache': sale.subtotal_0,
-                    
+
                     })
-                    
+
 class SaleReportTicket(Report):
     __name__ = 'sale_pos.sale_pos_ticket'
 
@@ -318,27 +324,26 @@ class SaleReportTicket(Report):
         sale = records[0]
         Sale = Pool().get('sale.sale')
         fecha_p = None
-        
+
         localcontext['fecha'] = cls._get_fecha(Sale, sale)
         localcontext['timedelta'] = timedelta
         return super(SaleReportTicket, cls).parse(report, records, data,
-                localcontext=localcontext)     
-        
+                localcontext=localcontext)
+
     @classmethod
     def _get_fecha(cls, Sale, sale):
         if sale.company.timezone:
             timezone = pytz.timezone(sale.company.timezone)
             dt = sale.create_date
             fecha = datetime.astimezone(dt.replace(tzinfo=pytz.utc), timezone)
-            
+
         return fecha
-        
+
 class SaleLine(ModelSQL, ModelView):
     'Sale Line'
     __name__ = 'sale.line'
     _rec_name = 'description'
-    
+
     @staticmethod
     def default_quantity():
         return 1
-    
