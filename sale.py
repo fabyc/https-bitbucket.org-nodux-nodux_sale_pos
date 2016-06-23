@@ -123,23 +123,24 @@ class Sale():
         res= {}
         termino = self.payment_term
         if self.payment_term:
-            if self.party.vat_number == '9999999999999':
-                TermLines = pool.get('account.invoice.payment_term.line')
-                Term = pool.get('account.invoice.payment_term')
-                term = Term.search([('id', '!=', None)])
-                for t in term:
-                    cont = 0
-                    termlines = TermLines.search([('payment', '=', t.id)])
-                    for tl in termlines:
-                        t_f = tl
-                        cont += 1
-                    if cont == 1 and t_f.days == 0:
-                        termino = t
-                        break
-            if termino:
-                res['payment_term'] = termino.id
-            else:
-                res['payment_term'] = None
+            if self.party:
+                if self.party.vat_number == '9999999999999':
+                    TermLines = pool.get('account.invoice.payment_term.line')
+                    Term = pool.get('account.invoice.payment_term')
+                    term = Term.search([('id', '!=', None)])
+                    for t in term:
+                        cont = 0
+                        termlines = TermLines.search([('payment', '=', t.id)])
+                        for tl in termlines:
+                            t_f = tl
+                            cont += 1
+                        if cont == 1 and t_f.days == 0:
+                            termino = t
+                            break
+                if termino:
+                    res['payment_term'] = termino.id
+                else:
+                    res['payment_term'] = None
         else:
             res['payment_term'] = None
         return res
