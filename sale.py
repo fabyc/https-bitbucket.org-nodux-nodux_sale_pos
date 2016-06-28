@@ -19,7 +19,6 @@ import pytz
 
 __all__ = ['Sale', 'SaleLine', 'SaleReportTicket']
 
-__metaclass__ = PoolMeta
 _ZERO = Decimal('0.0')
 PRODUCT_TYPES = ['goods']
 
@@ -33,6 +32,7 @@ tipoPago = {
 }
 
 class Sale():
+    __metaclass__ = PoolMeta
     __name__ = 'sale.sale'
 
     subtotal_0 = fields.Function(fields.Numeric('Subtotal 0%',
@@ -81,7 +81,6 @@ class Sale():
                     'invisible': Eval('invoice_state') != 'none'
                     },
                 })
-
         del cls.party.states['readonly']
         del cls.price_list.states['readonly']
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
@@ -316,6 +315,7 @@ class Sale():
                     })
 
 class SaleReportTicket(Report):
+    __metaclass__ = PoolMeta
     __name__ = 'sale_pos.sale_pos_ticket'
 
     @classmethod
@@ -341,7 +341,7 @@ class SaleReportTicket(Report):
         return fecha
 
 class SaleLine(ModelSQL, ModelView):
-    'Sale Line'
+    __metaclass__ = PoolMeta
     __name__ = 'sale.line'
     _rec_name = 'description'
 
