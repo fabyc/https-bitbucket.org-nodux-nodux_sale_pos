@@ -119,11 +119,10 @@ class Sale():
     @fields.depends('payment_term', 'party')
     def on_change_payment_term(self):
         pool = Pool()
-        res= {}
         termino = self.payment_term
         if self.payment_term:
             if self.party:
-                if self.party.vat_number == '9999999999999':
+                if self.party.vat_code == '9999999999999':
                     TermLines = pool.get('account.invoice.payment_term.line')
                     Term = pool.get('account.invoice.payment_term')
                     term = Term.search([('id', '!=', None)])
@@ -137,40 +136,32 @@ class Sale():
                             termino = t
                             break
                 if termino:
-                    res['payment_term'] = termino.id
+                    self.payment_term = termino.id
                 else:
-                    res['payment_term'] = None
+                    self.payment_term = None
         else:
-            res['payment_term'] = None
-        return res
+            self.payment_term = None
 
-    @fields.depends('lines', 'currency', 'party')
+    @fields.depends('lines', 'currency', 'party', 'self_pick_up')
     def on_change_lines(self):
-        pool = Pool()
-        Tax = pool.get('account.tax')
-        Invoice = pool.get('account.invoice')
-        Configuration = pool.get('account.configuration')
         sub14 = Decimal(0.0)
         sub12 = Decimal(0.0)
         sub0= Decimal(0.0)
-        config = Configuration(1)
         descuento_total = Decimal(0.0)
         descuento_parcial = Decimal(0.0)
 
-        changes = {
-            'untaxed_amount': Decimal('0.0'),
-            'tax_amount': Decimal('0.0'),
-            'total_amount': Decimal('0.0'),
-            'subtotal_12': Decimal('0.0'),
-            'subtotal_14': Decimal('0.0'),
-            'subtotal_0': Decimal('0.0'),
-            'descuento':Decimal('0.0')
-            }
+        if not self.self_pick_up:
+            super(Sale, self).on_change_lines()
+
+        self.untaxed_amount= Decimal('0.0')
+        self.tax_amount = Decimal('0.0')
+        self.total_amount = Decimal('0.0')
+        self.subtotal_12= Decimal('0.0')
+        self.subtotal_14= Decimal('0.0')
+        self.subtotal_0= Decimal('0.0')
+        self.descuento = Decimal('0.0')
 
         if self.lines:
-            context = self.get_tax_context()
-            taxes = {}
-
             for line in self.lines:
                 if  line.taxes:
                     for t in line.taxes:
@@ -188,47 +179,25 @@ class Sale():
                     else:
                         descuento_total = Decimal(0.00)
 
-                changes['subtotal_14'] = sub14
-                changes['subtotal_12'] = sub12
-                changes['subtotal_0'] = sub0
-                changes['descuento'] = descuento_total
+                self.subtotal_14 = sub14
+                self.subtotal_12 = sub12
+                self.subtotal_0 = sub0
+                self.descuento = descuento_total
 
-            def round_taxes():
-                if self.currency:
-                    for key, value in taxes.iteritems():
-                        taxes[key] = self.currency.round(value)
-
-            for line in self.lines:
-                if getattr(line, 'type', 'line') != 'line':
-                    continue
-                changes['untaxed_amount'] += (getattr(line, 'amount', None)
-                    or Decimal(0))
-
-                with Transaction().set_context(context):
-                    tax_list = Tax.compute(getattr(line, 'taxes', []),
-                        getattr(line, 'unit_price', None) or Decimal('0.0'),
-                        getattr(line, 'quantity', None) or 0.0)
-                for tax in tax_list:
-                    key, val = Invoice._compute_tax(tax, 'out_invoice')
-                    if key not in taxes:
-                        taxes[key] = val['amount']
-                    else:
-                        taxes[key] += val['amount']
-                if config.tax_rounding == 'line':
-                    round_taxes()
-            if config.tax_rounding == 'document':
-                round_taxes()
-            changes['tax_amount'] = sum(taxes.itervalues(), Decimal('0.0'))
+            self.untaxed_amount = reduce(lambda x, y: x + y,
+                [(getattr(l, 'amount', None) or Decimal(0))
+                    for l in self.lines if l.type == 'line'], Decimal(0)
+                )
+            self.total_amount = reduce(lambda x, y: x + y,
+                [(getattr(l, 'amount_w_tax', None) or Decimal(0))
+                    for l in self.lines if l.type == 'line'], Decimal(0)
+                )
         if self.currency:
-            changes['untaxed_amount'] = self.currency.round(
-                changes['untaxed_amount'])
-            changes['tax_amount'] = self.currency.round(changes['tax_amount'])
-        changes['total_amount'] = (changes['untaxed_amount']
-            + changes['tax_amount'])
+            self.untaxed_amount = self.currency.round(self.untaxed_amount)
+            self.total_amount = self.currency.round(self.total_amount)
+        self.tax_amount = self.total_amount - self.untaxed_amount
         if self.currency:
-            changes['total_amount'] = self.currency.round(
-                changes['total_amount'])
-        return changes
+            self.tax_amount = self.currency.round(self.tax_amount)
 
     @classmethod
     def get_amount(cls, sales, names):

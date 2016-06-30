@@ -6,7 +6,6 @@ copyright notices and license terms. -->
     <data>
         <record model="ir.ui.view" id="sale_pos_view_form">
             <field name="model">sale.sale</field>
-            <field name="type" Eval="None"/>
             <field name="inherit"
                 ref="sale_pos.sale_pos_view_form"/>
             <field name="name">sale_pos_form</field>
@@ -14,7 +13,6 @@ copyright notices and license terms. -->
 
         <record model="ir.ui.view" id="sale_pos_view_tree">
             <field name="model">sale.sale</field>
-            <field name="type" Eval="None"/>
             <field name="inherit"
                 ref="sale_pos.sale_pos_view_tree"/>
             <field name="name">sale_pos_tree</field>
@@ -22,7 +20,6 @@ copyright notices and license terms. -->
 
         <record model="ir.ui.view" id="sale_view_form">
             <field name="model">sale.sale</field>
-            <field name="type" Eval="None"/>
             <field name="inherit" ref="sale.sale_view_form"/>
             <field name="name">sale_form</field>
         </record>
@@ -40,7 +37,6 @@ copyright notices and license terms. -->
             <field name="model">sale.sale</field>
             <field name="report_name">sale_pos.sales_summary</field>
             <field name="report">nodux_sale_pos/sale_pos_summary.odt</field>
-            <field name="style"></field>
         </record>
 
         <record model="ir.action.report" id="sale_pos.report_sales_summary_by_party">
@@ -48,7 +44,6 @@ copyright notices and license terms. -->
             <field name="model">sale.sale</field>
             <field name="report_name">sale_pos.sales_summary_by_party</field>
             <field name="report">nodux_sale_pos/sale_pos_summary_by_party.odt</field>
-            <field name="style"></field>
         </record>
 
 
