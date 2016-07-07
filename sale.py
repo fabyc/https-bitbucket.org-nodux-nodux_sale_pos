@@ -81,7 +81,6 @@ class Sale():
                     'invisible': Eval('invoice_state') != 'none'
                     },
                 })
-
         del cls.party.states['readonly']
         del cls.price_list.states['readonly']
         cls.party.states['readonly'] = Eval('invoice_state') != 'none'
@@ -345,6 +344,59 @@ class SaleLine(ModelSQL, ModelView):
     __name__ = 'sale.line'
     _rec_name = 'description'
 
+
     @staticmethod
     def default_quantity():
         return 1
+
+    @fields.depends('product', 'unit', 'quantity', 'description',
+        '_parent_sale.party', '_parent_sale.currency',
+        '_parent_sale.sale_date')
+    def on_change_product(self):
+        Product = Pool().get('product.product')
+
+        if not self.product:
+            return {}
+        res = {}
+
+        party = None
+        party_context = {}
+        if self.sale and self.sale.party:
+            party = self.sale.party
+            if party.lang:
+                party_context['language'] = party.lang.code
+
+        category = self.product.sale_uom.category
+        if not self.unit or self.unit not in category.uoms:
+            res['unit'] = self.product.sale_uom.id
+            self.unit = self.product.sale_uom
+            res['unit.rec_name'] = self.product.sale_uom.rec_name
+            res['unit_digits'] = self.product.sale_uom.digits
+
+        with Transaction().set_context(self._get_context_sale_price()):
+            res['unit_price'] = Product.get_sale_price([self.product],
+                    self.quantity or 0)[self.product.id]
+            if res['unit_price']:
+                res['unit_price'] = res['unit_price'].quantize(
+                    Decimal(1) / 10 ** self.__class__.unit_price.digits[1])
+        res['taxes'] = []
+        pattern = self._get_tax_rule_pattern()
+        for tax in self.product.customer_taxes_used:
+            if party and party.customer_tax_rule:
+                tax_ids = party.customer_tax_rule.apply(tax, pattern)
+                if tax_ids:
+                    res['taxes'].extend(tax_ids)
+                continue
+            res['taxes'].append(tax.id)
+        if party and party.customer_tax_rule:
+            tax_ids = party.customer_tax_rule.apply(None, pattern)
+            if tax_ids:
+                res['taxes'].extend(tax_ids)
+
+        with Transaction().set_context(party_context):
+            res['description'] = Product(self.product.id).name
+
+        self.unit_price = res['unit_price']
+        self.type = 'line'
+        res['amount'] = self.on_change_with_amount()
+        return res
