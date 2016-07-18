@@ -61,7 +61,6 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='shipment_method']" position="replace">
-        <label name="shipment_method" invisible="1"/>
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='shipment_method']" position="replace">
@@ -69,7 +68,6 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='invoice_method']" position="replace">
-        <label name="invoice_method" invisible="1"/>
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='invoice_method']" position="replace">
@@ -77,7 +75,6 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='shipment_address']" position="replace">
-        <label name="shipment_address" invisible="1"/>
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='shipment_address']" position="replace">
@@ -85,7 +82,6 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='invoice_address']" position="replace">
-        <label name="invoice_address" invisible="1"/>
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='invoice_address']" position="replace">
