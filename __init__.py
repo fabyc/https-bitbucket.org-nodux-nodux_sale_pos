@@ -3,10 +3,15 @@
 # copyright notices and license terms.
 from trytond.pool import Pool
 from .sale import *
+from .product import *
+from .shop import *
+
 def register():
     Pool.register(
         Sale,
         SaleLine,
+        Product,
+        SaleShop,
         module='nodux_sale_pos', type_='model')
     Pool.register(
         SaleReportTicket,
