@@ -10,7 +10,6 @@ def register():
     Pool.register(
         Sale,
         SaleLine,
-        Template,
         Product,
         SaleShop,
         module='nodux_sale_pos', type_='model')
