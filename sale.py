@@ -153,6 +153,7 @@ class Sale():
         sub14 = Decimal(0.0)
         sub12 = Decimal(0.0)
         sub0= Decimal(0.0)
+        total_new = Decimal(0.0)
         config = Configuration(1)
         descuento_total = Decimal(0.0)
         descuento_parcial = Decimal(0.0)
@@ -170,7 +171,6 @@ class Sale():
         if self.lines:
             context = self.get_tax_context()
             taxes = {}
-
             for line in self.lines:
                 if  line.taxes:
                     for t in line.taxes:
@@ -180,6 +180,7 @@ class Sale():
                             sub0 = sub0 + (line.amount)
                         elif str('{:.0f}'.format(t.rate*100)) == '14':
                             sub14 = sub14 + (line.amount)
+                total_new += line.amount_w_tax
 
                 if line.product:
                     descuento_parcial = Decimal(line.product.template.list_price - line.unit_price)
@@ -192,6 +193,9 @@ class Sale():
                 changes['subtotal_12'] = sub12
                 changes['subtotal_0'] = sub0
                 changes['descuento'] = descuento_total
+
+            if self.currency:
+                total_new = self.currency.round(total_new)
 
             def round_taxes():
                 if self.currency:
@@ -228,6 +232,12 @@ class Sale():
         if self.currency:
             changes['total_amount'] = self.currency.round(
                 changes['total_amount'])
+        if total_new == changes['total_amount']:
+            pass
+        else:
+            changes['total_amount'] = total_new
+            changes['untaxed_amount'] = (changes['total_amount']
+                - changes['tax_amount'])
         return changes
 
     @classmethod
@@ -256,11 +266,11 @@ class Sale():
                 if  line.taxes:
                     for t in line.taxes:
                         if str('{:.0f}'.format(t.rate*100)) == '12':
-                            sub12= sub12 + (line.amount)
+                            sub12= sub12 + (line.gross_unit_price * int(line.quantity))
                         elif str('{:.0f}'.format(t.rate*100)) == '14':
-                            sub14 = sub14 + (line.amount)
+                            sub14 = sub14 + (line.gross_unit_price * int(line.quantity))
                         elif str('{:.0f}'.format(t.rate*100)) == '0':
-                            sub0 = sub0 + (line.amount)
+                            sub0 = sub0 + (line.gross_unit_price * int(line.quantity))
 
             if (sale.state in cls._states_cached
                     and sale.untaxed_amount_cache is not None
@@ -277,17 +287,16 @@ class Sale():
                     tax_amount[sale.id] = sale.tax_amount_cache
                     total_amount[sale.id] = sale.total_amount_cache
             else:
-                untaxed_amount[sale.id] = sum(
-                    (line.amount for line in sale.lines
-                        if line.type == 'line'), _ZERO)
-                subtotal_0[sale.id] = sub0
-                subtotal_12[sale.id] = sub12
-                subtotal_14[sale.id] = sub14
+                untaxed_amount[sale.id] = sale.currency.round(sum(
+                    ((line.gross_unit_price * int(line.quantity)) for line in sale.lines
+                        if line.type == 'line'), _ZERO))
+                subtotal_0[sale.id] = sale.currency.round(sub0)
+                subtotal_12[sale.id] = sale.currency.round(sub12)
+                subtotal_14[sale.id] = sale.currency.round(sub14)
                 if compute_taxes:
                     tax_amount[sale.id] = sale.get_tax_amount()
                     total_amount[sale.id] = (
                         untaxed_amount[sale.id] + tax_amount[sale.id])
-
         result = {
             'untaxed_amount': untaxed_amount,
             'tax_amount': tax_amount,
@@ -344,6 +353,9 @@ class SaleLine(ModelSQL, ModelView):
     __name__ = 'sale.line'
     _rec_name = 'description'
 
+    @classmethod
+    def __setup__(cls):
+        super(SaleLine, cls).__setup__()
 
     @staticmethod
     def default_quantity():
