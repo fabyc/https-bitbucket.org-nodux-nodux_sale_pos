@@ -263,9 +263,10 @@ class Sale():
             reverse=True)
         sales = cls.browse(sales)
         for sale in sales:
+            module = None
             for line in sale.lines:
                 pool = Pool()
-                module = None
+
                 Module = pool.get('ir.module.module')
                 module = Module.search([('name', '=', 'sale_discount'), ('state', '=', 'installed')])
 
