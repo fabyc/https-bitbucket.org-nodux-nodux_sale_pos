@@ -39,7 +39,7 @@ class Sale():
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_amount')
     subtotal_0_cache = fields.Numeric('Subtotal 0% Cache',
-        digits=(16, Eval('currency_digits', 2)),
+        digits=(16, Eval('currency_digits', 6)),
         readonly=True,
         depends=['currency_digits'])
 
@@ -47,7 +47,7 @@ class Sale():
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_amount')
     subtotal_12_cache = fields.Numeric('Subtotal 12% Cache',
-        digits=(16, Eval('currency_digits', 2)),
+        digits=(16, Eval('currency_digits', 6)),
         readonly=True,
         depends=['currency_digits'])
 
@@ -55,7 +55,7 @@ class Sale():
             digits=(16, Eval('currency_digits', 2)),
             depends=['currency_digits']), 'get_amount')
     subtotal_14_cache = fields.Numeric('Subtotal 14% Cache',
-        digits=(16, Eval('currency_digits', 2)),
+        digits=(16, Eval('currency_digits', 6)),
         readonly=True,
         depends=['currency_digits'])
 
