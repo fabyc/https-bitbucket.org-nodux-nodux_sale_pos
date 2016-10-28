@@ -3,6 +3,10 @@
 The COPYRIGHT file at the top level of this repository contains the full copyright notices and license terms. -->
 <data>
 
+    <xpath expr="/form/notebook/page[@id='sale']/label[@name='party']" position="replace">
+      <label name="party2"/>
+    </xpath>
+
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='untaxed_amount']" position="replace">
     </xpath>
 

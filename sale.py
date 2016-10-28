@@ -69,6 +69,8 @@ class Sale():
                 'invisible' : Eval('state') != 'quotation',
                 })
 
+    party2 = fields.Many2One('party.party', 'Client')
+
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()

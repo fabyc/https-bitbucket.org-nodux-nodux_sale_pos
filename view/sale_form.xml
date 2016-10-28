@@ -7,6 +7,10 @@ this repository contains the full copyright notices and license terms. -->
             position="replace">
     </xpath>
 
+    <xpath expr="/form/label[@name='party']" position="replace">
+        <label name="party2"/>
+    </xpath>
+
     <xpath expr="/form/notebook/page[@id=&quot;sale&quot;]/group[@id=&quot;states&quot;]"
             position="before">
             <newline/>
