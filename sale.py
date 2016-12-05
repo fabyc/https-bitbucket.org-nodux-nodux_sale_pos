@@ -71,6 +71,8 @@ class Sale():
 
     party2 = fields.Many2One('party.party', 'Client')
 
+
+
     @classmethod
     def __setup__(cls):
         super(Sale, cls).__setup__()
@@ -117,6 +119,37 @@ class Sale():
         Date = Pool().get('ir.date')
         date = Date.today()
         return date
+
+    @fields.depends('sale_date')
+    def on_change_sale_date(self):
+        pool = Pool()
+        res = {}
+        ModelData = pool.get('ir.model.data')
+        User = pool.get('res.user')
+        Group = pool.get('res.group')
+        origin = str(self)
+
+        def in_group():
+            group = Group(ModelData.get_id('nodux_sale_pos',
+                    'group_change_sale_date'))
+            transaction = Transaction()
+            user_id = transaction.user
+            if user_id == 0:
+                user_id = transaction.context.get('user', user_id)
+            if user_id == 0:
+                return True
+            user = User(user_id)
+            return origin and group in user.groups
+
+        Date = Pool().get('ir.date')
+        if not in_group():
+            res['sale_date'] = Date.today()
+        else:
+            if self.sale_date > Date.today():
+                res['sale_date'] = Date.today()
+            else:
+                res['sale_date'] = self.sale_date
+        return res
 
     @fields.depends('payment_term', 'party')
     def on_change_payment_term(self):
@@ -173,6 +206,7 @@ class Sale():
         if self.lines:
             context = self.get_tax_context()
             taxes = {}
+
             for line in self.lines:
                 if  line.taxes:
                     for t in line.taxes:
@@ -279,11 +313,11 @@ class Sale():
                         if  line.taxes:
                             for t in line.taxes:
                                 if str('{:.0f}'.format(t.rate*100)) == '12':
-                                    sub12= sub12 + (line.amount)
+                                    sub12= sub12 + (line.unit_price * Decimal(line.quantity))
                                 elif str('{:.0f}'.format(t.rate*100)) == '14':
-                                    sub14 = sub14 + (line.amount)
+                                    sub14 = sub14 + (line.unit_price * Decimal(line.quantity))
                                 elif str('{:.0f}'.format(t.rate*100)) == '0':
-                                    sub0 = sub0 + (line.amount)
+                                    sub0 = sub0 + (line.unit_price * Decimal(line.quantity))
                     else:
                         if  line.taxes:
                             for t in line.taxes:
@@ -297,11 +331,11 @@ class Sale():
                     if  line.taxes:
                         for t in line.taxes:
                             if str('{:.0f}'.format(t.rate*100)) == '12':
-                                sub12= sub12 + (line.amount)
+                                sub12= sub12 + (line.unit_price * Decimal(line.quantity))
                             elif str('{:.0f}'.format(t.rate*100)) == '14':
-                                sub14 = sub14 + (line.amount)
+                                sub14 = sub14 + (line.unit_price * Decimal(line.quantity))
                             elif str('{:.0f}'.format(t.rate*100)) == '0':
-                                sub0 = sub0 + (line.amount)
+                                sub0 = sub0 + (line.unit_price * Decimal(line.quantity))
 
 
             if (sale.state in cls._states_cached
@@ -322,7 +356,7 @@ class Sale():
                 if module:
                     if (descuento_desglose > Decimal(0.0)) | (discount > Decimal(0.0)):
                         untaxed_amount[sale.id] = sale.currency.round(sum(
-                            ((line.amount) for line in sale.lines
+                            ((line.unit_price * Decimal(line.quantity)) for line in sale.lines
                                 if line.type == 'line'), _ZERO))
                     else:
                         untaxed_amount[sale.id] = sale.currency.round(sum(
@@ -330,7 +364,7 @@ class Sale():
                                 if line.type == 'line'), _ZERO))
                 else:
                     untaxed_amount[sale.id] = sale.currency.round(sum(
-                        ((line.amount) for line in sale.lines
+                        ((line.unit_price * Decimal(line.quantity)) for line in sale.lines
                             if line.type == 'line'), _ZERO))
 
                 subtotal_0[sale.id] = sale.currency.round(sub0)
@@ -365,6 +399,7 @@ class Sale():
                     'subtotal_0_cache': sale.subtotal_0,
 
                     })
+
 
 class SaleReportTicket(Report):
     __name__ = 'sale_pos.sale_pos_ticket'
@@ -458,4 +493,5 @@ class SaleLine(ModelSQL, ModelView):
         self.unit_price = res['unit_price']
         self.type = 'line'
         res['amount'] = self.on_change_with_amount()
+
         return res
