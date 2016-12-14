@@ -71,6 +71,15 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
         <field name="shipment_method" invisible="1"/>
     </xpath>
 
+    <!--xpath expr="/form/group[@id='full_workflow_buttons']" position="after">
+        <newline/>
+        <field name="all_list_price" colspan="2"
+          view_ids="nodux_sale_pos.list_price_line_view_tree"/>
+        <field name="warehouse_sale" colspan="2"
+          view_ids="nodux_sale_pos.warehouse_line_view_tree"/>
+        <newline/>
+    </xpath-->
+
     <xpath expr="/form/notebook/page[@id='sale']/label[@name='invoice_method']" position="replace">
     </xpath>
 

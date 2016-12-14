@@ -2,6 +2,10 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
+msgctxt "field:product.template,permission:"
+msgid "State Permission"
+msgstr ""
+
 msgctxt "field:sale.sale,descuento:"
 msgid "Descuento"
 msgstr ""
@@ -9,6 +13,10 @@ msgstr ""
 msgctxt "field:sale.sale,imprimir:"
 msgid "Imprimir sin precio unitario"
 msgstr ""
+
+msgctxt "field:sale.sale,party2:"
+msgid "Client"
+msgstr "Cliente"
 
 msgctxt "field:sale.sale,subtotal_0:"
 msgid "Subtotal 0%"
@@ -34,6 +42,22 @@ msgctxt "field:sale.sale,subtotal_14_cache:"
 msgid "Subtotal 14% Cache"
 msgstr ""
 
+msgctxt "field:sale.shop,no_warehouse:"
+msgid "No. warehouse"
+msgstr "No. Bodegas"
+
 msgctxt "help:sale.sale,imprimir:"
 msgid "Imprimircotizacion sin desglose de precio unitario"
 msgstr "Imprimir cotizacion sin desglose de precio unitario"
+
+msgctxt "help:sale.shop,no_warehouse:"
+msgid ""
+"Numero de bodegas que se mostraran en la busqueda:\n"
+"Vacio: Mostrar todas las bodegas\n"
+"0: No muestra bodegas en busqueda de productos\n"
+"Numero: Muestra el total de bodegas que se indique (ej. 1)"
+msgstr ""
+
+msgctxt "model:res.group,name:group_cost_price"
+msgid "Nodux - Precio de Costo"
+msgstr ""

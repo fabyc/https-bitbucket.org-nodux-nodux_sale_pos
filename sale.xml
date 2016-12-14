@@ -25,8 +25,7 @@ copyright notices and license terms. -->
             <field name="type">form</field>
             <field name="inherit" ref="sale.sale_view_form"/>
             <field name="name">sale_form</field>
-        </record>
-
+        </record> 
         <!-- Reports-->
         <record model="ir.action.report" id="sale_pos.report_sale_ticket">
             <field name="name">Sale Ticket</field>
