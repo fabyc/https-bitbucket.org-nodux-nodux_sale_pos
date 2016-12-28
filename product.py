@@ -110,6 +110,7 @@ class Product():
                     for clave, valor in cantidad.iteritems():
                         qty = (str(valor).split("."))[0]
                     warehouses += location.name+ ':'+ str(qty)
+                    print "warehouses", warehouses
                     i += 1
                 if self.code:
                     return '[' + self.code + '] ' + self.name + ' (Precio:'+str(self.list_price)+' - '+warehouses+')'

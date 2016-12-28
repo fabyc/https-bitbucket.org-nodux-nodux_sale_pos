@@ -25,7 +25,7 @@ copyright notices and license terms. -->
             <field name="type">form</field>
             <field name="inherit" ref="sale.sale_view_form"/>
             <field name="name">sale_form</field>
-        </record> 
+        </record>
         <!-- Reports-->
         <record model="ir.action.report" id="sale_pos.report_sale_ticket">
             <field name="name">Sale Ticket</field>
@@ -53,19 +53,19 @@ copyright notices and license terms. -->
 
         <!-- Views -->
           <!-- Views warehouse-->
-        <!--record model="ir.ui.view" id="warehouse_line_view_tree">
+        <record model="ir.ui.view" id="warehouse_line_view_tree">
             <field name="model">sale.warehouse</field>
             <field name="type">tree</field>
             <field name="priority">20</field>
             <field name="name">warehouse_line_tree</field>
-        </record-->
+        </record>
         <!-- Views list price-->
-        <!--record model="ir.ui.view" id="list_price_line_view_tree">
+        <record model="ir.ui.view" id="list_price_line_view_tree">
             <field name="model">sale.list_by_product</field>
             <field name="type">tree</field>
             <field name="priority">20</field>
             <field name="name">list_price_line_tree</field>
-        </record-->
+        </record>
 
         <!-- group -->
         <record model="res.group" id="group_change_sale_date">
