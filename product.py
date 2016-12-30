@@ -71,6 +71,11 @@ class Product():
         Shop = Pool().get('sale.shop')
         shop = Shop(Transaction().context.get('shop'))
 
+        if self.code:
+            return '[' + self.code + '] ' + self.name
+        else:
+            return self.name
+        """
         if shop.id:
             warehouse = shop.no_warehouse
             Location = Pool().get('stock.location')
@@ -110,7 +115,6 @@ class Product():
                     for clave, valor in cantidad.iteritems():
                         qty = (str(valor).split("."))[0]
                     warehouses += location.name+ ':'+ str(qty)
-                    print "warehouses", warehouses
                     i += 1
                 if self.code:
                     return '[' + self.code + '] ' + self.name + ' (Precio:'+str(self.list_price)+' - '+warehouses+')'
@@ -118,3 +122,4 @@ class Product():
                     return self.name
         else:
             return self.name
+        """
