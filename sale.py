@@ -71,6 +71,7 @@ class Sale():
 
     party2 = fields.Many2One('party.party', 'Client')
 
+    pago = fields.Char('Pago')
 
 
     @classmethod
@@ -156,12 +157,26 @@ class Sale():
         pool = Pool()
         res= {}
         termino = self.payment_term
+        pago = "Contado"
+        TermLines = pool.get('account.invoice.payment_term.line')
+        Term = pool.get('account.invoice.payment_term')
+        term = Term.search([('id', '!=', None)])
+
         if self.payment_term:
+            cont_term = 0
+            for line in self.payment_term.lines:
+                cont_term += 1
+            if cont_term == 1:
+                for line in self.payment_term.lines:
+                    if line.days ==0:
+                        pago = "Contado"
+                    else:
+                        pago = "Credito"
+            else:
+                pago = "Credito"
+
             if self.party:
                 if self.party.vat_number == '9999999999999':
-                    TermLines = pool.get('account.invoice.payment_term.line')
-                    Term = pool.get('account.invoice.payment_term')
-                    term = Term.search([('id', '!=', None)])
                     for t in term:
                         cont = 0
                         termlines = TermLines.search([('payment', '=', t.id)])
@@ -171,12 +186,17 @@ class Sale():
                         if cont == 1 and t_f.days == 0:
                             termino = t
                             break
+
                 if termino:
                     res['payment_term'] = termino.id
                 else:
                     res['payment_term'] = None
+
+            res['pago'] = pago
         else:
             res['payment_term'] = None
+            res['pago'] = None
+
         return res
 
     @fields.depends('lines', 'currency', 'party')

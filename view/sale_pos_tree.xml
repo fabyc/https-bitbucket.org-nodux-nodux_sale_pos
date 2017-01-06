@@ -6,4 +6,11 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
         expr="/tree/field[@name='ticket_number']"
         position="replace">
     </xpath>
+
+    <xpath
+        expr="/tree/field[@name='total_amount']"
+        position="before">
+        <field name="pago"/>
+    </xpath>
+
 </data>
