@@ -9,7 +9,7 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
 
     <xpath
         expr="/tree/field[@name='total_amount']"
-        position="before">
+        position="after">
         <field name="pago"/>
     </xpath>
 
