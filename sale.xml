@@ -52,7 +52,7 @@ copyright notices and license terms. -->
 
 
         <!-- Views -->
-          <!-- Views warehouse-->
+        <!-- Views warehouse-->
         <record model="ir.ui.view" id="warehouse_line_view_tree">
             <field name="model">sale.warehouse</field>
             <field name="type">tree</field>
