@@ -22,11 +22,11 @@ The COPYRIGHT file at the top level of this repository contains the full copyrig
     </xpath>
 
     <xpath expr="/form/notebook/page[@id='sale']/field[@name='subtotal_0']" position="after">
-        <label name="subtotal_14"/>
-        <field name="subtotal_14"/>
+        <label name="subtotal_12"/>
+        <field name="subtotal_12"/>
     </xpath>
 
-    <xpath expr="/form/notebook/page[@id='sale']/field[@name='subtotal_14']" position="after">
+    <xpath expr="/form/notebook/page[@id='sale']/field[@name='subtotal_12']" position="after">
         <label name="descuento"/>
         <field name="descuento"/>
     </xpath>
